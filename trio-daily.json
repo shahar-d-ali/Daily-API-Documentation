@@ -1495,6 +1495,14 @@
               "enum": ["VMS", "KIOSK", "MICRO_MARKET"]
             },
             "description": "Application type"
+          },
+          {
+            "name": "isAudit",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "boolean"
+            }
           }
         ],
         "responses": {
@@ -2223,55 +2231,153 @@
       "LocationListDto": {
         "type": "object",
         "properties": {
-          "locationId": {
+          "locations": {
+            "type": "array",
+            "description": "List of locations in the route",
+            "items": {
+              "type": "object",
+              "properties": {
+                "routeStatus": {
+                  "type": "string",
+                  "description": "Status of the route for this location",
+                  "example": "INPROGRESS"
+                },
+                "locationId": {
+                  "type": "integer",
+                  "description": "Unique identifier for the location",
+                  "example": 45
+                },
+                "locationName": {
+                  "type": "string",
+                  "description": "Name of the location",
+                  "example": "Central Square Park"
+                },
+                "longitude": {
+                  "type": "string",
+                  "description": "Longitude of the location",
+                  "example": "32.789051199999996"
+                },
+                "latitude": {
+                  "type": "string",
+                  "description": "Latitude of the location",
+                  "example": "-96.7843601"
+                }
+              }
+            }
+          },
+          "numOfServicedLocations": {
             "type": "integer",
-            "description": "Location ID",
-            "example": 789
+            "description": "Number of serviced locations",
+            "example": 1
           },
-          "locationName": {
-            "type": "string",
-            "description": "Location name",
-            "example": "Office Building A"
-          },
-          "address": {
-            "type": "string",
-            "description": "Location address",
-            "example": "123 Main St, City, State"
-          },
-          "machineCount": {
+          "numOfLocations": {
             "type": "integer",
-            "description": "Number of machines at location",
-            "example": 5
+            "description": "Total number of locations",
+            "example": 2
           }
         }
       },
       "MachinesListDto": {
         "type": "object",
         "properties": {
-          "machineId": {
+          "numOfServicedMachines": {
             "type": "integer",
-            "description": "Machine ID",
-            "example": 101
+            "description": "Number of serviced machines",
+            "example": 0
           },
-          "machineName": {
-            "type": "string",
-            "description": "Machine name",
-            "example": "Vending Machine 1"
+          "numOfMachines": {
+            "type": "integer",
+            "description": "Total number of machines",
+            "example": 1
           },
-          "machineType": {
-            "type": "string",
-            "description": "Machine type",
-            "example": "VENDING"
-          },
-          "status": {
-            "type": "string",
-            "description": "Machine status",
-            "example": "ACTIVE"
-          },
-          "lastServiceDate": {
-            "type": "string",
-            "format": "date-time",
-            "description": "Last service date"
+          "machines": {
+            "type": "array",
+            "description": "List of machines in the route",
+            "items": {
+              "type": "object",
+              "properties": {
+                "routePlanMachineId": {
+                  "type": "integer",
+                  "description": "Route plan machine ID",
+                  "example": 816
+                },
+                "machineName": {
+                  "type": "string",
+                  "description": "Machine name",
+                  "example": "Mitchell RE Mac"
+                },
+                "machineId": {
+                  "type": "integer",
+                  "description": "Machine ID",
+                  "example": 39
+                },
+                "deviceId": {
+                  "type": "string",
+                  "description": "Device ID",
+                  "example": "VMSANJI"
+                },
+                "appType": {
+                  "type": "string",
+                  "description": "Application type",
+                  "example": "VENDING"
+                },
+                "routeAction": {
+                  "type": "string",
+                  "description": "Route action",
+                  "example": "SERVICE"
+                },
+                "assetId": {
+                  "type": ["string", "null"],
+                  "description": "Asset ID",
+                  "example": null
+                },
+                "lastDex": {
+                  "type": ["string", "null"],
+                  "description": "Last DEX reading",
+                  "example": null
+                },
+                "isServiced": {
+                  "type": "boolean",
+                  "description": "Is machine serviced",
+                  "example": false
+                },
+                "routeServiceType": {
+                  "type": ["string", "null"],
+                  "description": "Route service type",
+                  "example": null
+                },
+                "isAudit": {
+                  "type": "boolean",
+                  "description": "Is audit required",
+                  "example": false
+                },
+                "toteNo": {
+                  "type": ["string", "null"],
+                  "description": "Tote number",
+                  "example": null
+                },
+                "moneyBag": {
+                  "type": "boolean",
+                  "description": "Money bag present",
+                  "example": false
+                },
+                "refundAmount": {
+                  "type": "boolean",
+                  "description": "Refund amount present",
+                  "example": false
+                },
+                "changeAdded": {
+                  "type": "boolean",
+                  "description": "Change added",
+                  "example": false
+                },
+                "driverNote": {
+                  "type": "boolean",
+                  "description": "Driver note present",
+                  "example": false
+                }
+              }
+            }
           }
         }
       },
