@@ -1,0 +1,2675 @@
+
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Trio Daily API",
+    "description": "API documentation for Trio Daily application endpoints including authentication, account management, sales, routes, notifications, and truck management.",
+    "version": "3.0.0",
+    "contact": {
+      "name": "Trinity Axis Team",
+      "email": "support@trinityaxis.com"
+    }
+  },
+  "servers": [
+    {
+      "url": "http://localhost:8080",
+      "description": "Local development server"
+    },
+    {
+      "url": "https://api.trinityaxis.com",
+      "description": "Production server"
+    }
+  ],
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "paths": {
+    "/daily/auth/login": {
+      "post": {
+        "tags": ["Authentication"],
+        "summary": "Login User",
+        "description": "Authenticate a kiosk user and return an access token.",
+        "operationId": "loginUser",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successfully authenticated user",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "token": {
+                      "type": "string",
+                      "description": "JWT access token"
+                    },
+                    "userId": {
+                      "type": "integer",
+                      "description": "User ID"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    },
+    "/daily/auth/send-otp": {
+      "post": {
+        "tags": ["Authentication"],
+        "summary": "Send OTP",
+        "description": "Send OTP to the user for verification.",
+        "operationId": "sendOtp",
+        "parameters": [
+          {
+            "name": "identifier",
+            "in": "query",
+            "description": "Email or username identifier",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OTP sent successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    },
+    "/daily/auth/validate-otp": {
+      "put": {
+        "tags": ["Authentication"],
+        "summary": "Validate OTP",
+        "description": "Validate the OTP sent to the user.",
+        "operationId": "validateOtp",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OtpRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OTP validated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/ApiResponse"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "type": "object",
+                          "properties": {
+                            "resetToken": {
+                              "type": "string",
+                              "description": "JWT reset token for password change"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    },
+    "/daily/auth/change-password": {
+      "put": {
+        "tags": ["Authentication"],
+        "summary": "Change Password",
+        "description": "Change the password for the user.",
+        "operationId": "changePassword",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChangePasswordDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Password changed successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    },
+    "/daily/account/logout": {
+      "delete": {
+        "tags": ["Account Management"],
+        "summary": "Logout User",
+        "description": "Logout the authenticated user and invalidate the token.",
+        "operationId": "logout",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User logged out successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    },
+    "/daily/account/permissions": {
+      "get": {
+        "tags": ["Account Management"],
+        "summary": "Get User Permissions",
+        "description": "Get daily user permissions including module and field permissions.",
+        "operationId": "getDailyUserPermission",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User permissions retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/DailyUserPermissions"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    },
+    "/daily/sales/top-selling-products": {
+      "get": {
+        "tags": ["Sales"],
+        "summary": "Get Top Selling Products",
+        "description": "Retrieve the top selling products based on sales data.",
+        "operationId": "getTopSellingProducts",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Top selling products retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "productId": {
+                        "type": "integer"
+                      },
+                      "productName": {
+                        "type": "string"
+                      },
+                      "salesAmount": {
+                        "type": "number",
+                        "format": "double"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    },
+    "/daily/sales/top-selling-locations": {
+      "get": {
+        "tags": ["Sales"],
+        "summary": "Get Top Selling Locations",
+        "description": "Retrieve the top selling locations based on sales data.",
+        "operationId": "getTopSellingLocations",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Top selling locations retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "locationId": {
+                        "type": "integer"
+                      },
+                      "locationName": {
+                        "type": "string"
+                      },
+                      "salesAmount": {
+                        "type": "number",
+                        "format": "double"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    },
+    "/daily/sales/kpi-dashboard": {
+      "get": {
+        "tags": ["Sales"],
+        "summary": "Get KPI Dashboard Data",
+        "description": "Retrieve KPI dashboard data for sales metrics.",
+        "operationId": "getKpiDashboard",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "KPI dashboard data retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "totalSales": {
+                      "type": "number",
+                      "format": "double"
+                    },
+                    "totalRevenue": {
+                      "type": "number",
+                      "format": "double"
+                    },
+                    "activeLocations": {
+                      "type": "integer"
+                    },
+                    "activeMachines": {
+                      "type": "integer"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    },
+    "/daily/sales/revenue-trend": {
+      "get": {
+        "tags": ["Sales"],
+        "summary": "Get Revenue Trend Data",
+        "description": "Retrieve revenue trend data over time.",
+        "operationId": "getRevenueTrend",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Revenue trend data retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "date": {
+                        "type": "string",
+                        "format": "date"
+                      },
+                      "revenue": {
+                        "type": "number",
+                        "format": "double"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    },
+    "/daily/dex/machineList": {
+      "get": {
+        "tags": ["DEX"],
+        "summary": "Get Machine List",
+        "description": "Retrieve list of machines for DEX operations.",
+        "operationId": "getMachineList",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Machine list retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "machineId": {
+                        "type": "integer"
+                      },
+                      "machineName": {
+                        "type": "string"
+                      },
+                      "locationId": {
+                        "type": "integer"
+                      },
+                      "status": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    },
+    "/daily/dex/dexRead": {
+      "put": {
+        "tags": ["DEX"],
+        "summary": "Process DEX Read",
+        "description": "Process DEX read operation for a machine.",
+        "operationId": "processDexRead",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "machineId": {
+                    "type": "integer"
+                  },
+                  "dexData": {
+                    "type": "string"
+                  }
+                },
+                "required": ["machineId", "dexData"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "DEX read processed successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    },
+    "/daily/truck/list": {
+      "get": {
+        "tags": ["Truck Management"],
+        "summary": "Get Truck List",
+        "description": "Retrieve list of trucks.",
+        "operationId": "getTruckList",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Truck list retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "truckId": {
+                        "type": "integer"
+                      },
+                      "truckName": {
+                        "type": "string"
+                      },
+                      "driverName": {
+                        "type": "string"
+                      },
+                      "status": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    },
+    "/daily/truck/inventory/{truckId}": {
+      "get": {
+        "tags": ["Truck Management"],
+        "summary": "Get Truck Inventory",
+        "description": "Retrieve inventory for a specific truck.",
+        "operationId": "getTruckInventory",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "truckId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "ID of the truck"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Truck inventory retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "productId": {
+                        "type": "integer"
+                      },
+                      "productName": {
+                        "type": "string"
+                      },
+                      "quantity": {
+                        "type": "integer"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    },
+    "/daily/truck/pulled/{truckId}": {
+      "get": {
+        "tags": ["Truck Management"],
+        "summary": "Get Pulled Products",
+        "description": "Retrieve pulled products for a specific truck.",
+        "operationId": "getPulledProducts",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "truckId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "ID of the truck"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Pulled products retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "productId": {
+                        "type": "integer"
+                      },
+                      "productName": {
+                        "type": "string"
+                      },
+                      "pulledQuantity": {
+                        "type": "integer"
+                      },
+                      "pullDate": {
+                        "type": "string",
+                        "format": "date-time"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    },
+    "/daily/notification/logs/{userId}": {
+      "get": {
+        "tags": ["Notifications"],
+        "summary": "Get Notification Logs",
+        "description": "Retrieve notification logs for a specific user.",
+        "operationId": "getNotificationLogs",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "ID of the user"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Notification logs retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "notificationId": {
+                        "type": "integer"
+                      },
+                      "message": {
+                        "type": "string"
+                      },
+                      "timestamp": {
+                        "type": "string",
+                        "format": "date-time"
+                      },
+                      "isRead": {
+                        "type": "boolean"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    },
+    "/daily/notification/settings/{userId}": {
+      "get": {
+        "tags": ["Notifications"],
+        "summary": "Get Notification Settings",
+        "description": "Retrieve notification settings for a specific user.",
+        "operationId": "getNotificationSettings",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "ID of the user"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Notification settings retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "emailNotifications": {
+                      "type": "boolean"
+                    },
+                    "pushNotifications": {
+                      "type": "boolean"
+                    },
+                    "smsNotifications": {
+                      "type": "boolean"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    },
+    "/daily/notification/settings/update": {
+      "put": {
+        "tags": ["Notifications"],
+        "summary": "Update Notification Settings",
+        "description": "Update notification settings for a user.",
+        "operationId": "updateNotificationSettings",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "userId": {
+                    "type": "integer"
+                  },
+                  "emailNotifications": {
+                    "type": "boolean"
+                  },
+                  "pushNotifications": {
+                    "type": "boolean"
+                  },
+                  "smsNotifications": {
+                    "type": "boolean"
+                  }
+                },
+                "required": ["userId"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Notification settings updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    },
+    "/daily/notification/settings/notificationLog": {
+      "post": {
+        "tags": ["Notifications"],
+        "summary": "Create Notification Log",
+        "description": "Create a new notification log entry.",
+        "operationId": "createNotificationLog",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "userId": {
+                    "type": "integer"
+                  },
+                  "message": {
+                    "type": "string"
+                  },
+                  "notificationType": {
+                    "type": "string"
+                  }
+                },
+                "required": ["userId", "message"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Notification log created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    },
+    "/daily/notification/logs/update": {
+      "put": {
+        "tags": ["Notifications"],
+        "summary": "Update Notification Log",
+        "description": "Update an existing notification log entry.",
+        "operationId": "updateNotificationLog",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "notificationId": {
+                    "type": "integer"
+                  },
+                  "isRead": {
+                    "type": "boolean"
+                  }
+                },
+                "required": ["notificationId"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Notification log updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    },
+    "/daily/routes": {
+      "get": {
+        "tags": ["Routes"],
+        "summary": "Get Routes List",
+        "description": "Retrieve list of routes with optional status filtering.",
+        "operationId": "getDriverList",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "routeStatus",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": ["PLANNED", "IN_PROGRESS", "COMPLETED", "CANCELLED"]
+              }
+            },
+            "description": "Filter routes by status"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Routes list retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/RoutesListDto"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    },
+    "/daily/routes/{routePlanId}/locations": {
+      "get": {
+        "tags": ["Routes"],
+        "summary": "Get Route Locations",
+        "description": "Retrieve locations for a specific route plan.",
+        "operationId": "getDriverLocations",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "routePlanId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "ID of the route plan"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Route locations retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/LocationListDto"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    },
+    "/daily/routes/{routePlanId}/locations/{locationId}/machines": {
+      "get": {
+        "tags": ["Routes"],
+        "summary": "Get Location Machines",
+        "description": "Retrieve machines for a specific location in a route plan.",
+        "operationId": "getDriverMachines",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "routePlanId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "ID of the route plan"
+          },
+          {
+            "name": "locationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "ID of the location"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Location machines retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/MachinesListDto"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    },
+    "/daily/routes/{routePlanId}/route-plan/{routePlanMachineId}/machine/{machineId}": {
+      "get": {
+        "tags": ["Routes"],
+        "summary": "Get Machine Details",
+        "description": "Retrieve detailed information for a specific machine in a route plan.",
+        "operationId": "getMachineDetails",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "routePlanId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "ID of the route plan"
+          },
+          {
+            "name": "routePlanMachineId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "ID of the route plan machine"
+          },
+          {
+            "name": "machineId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "ID of the machine"
+          },
+          {
+            "name": "appType",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": ["VMS", "KIOSK", "MICRO_MARKET"]
+            },
+            "description": "Application type"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Machine details retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MachineDetailsDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    },
+    "/daily/routes/{routePlanMachineId}/manual-pl": {
+      "put": {
+        "tags": ["Routes"],
+        "summary": "Update Route Manually",
+        "description": "Manually update a route plan machine.",
+        "operationId": "updateRouteManually",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "routePlanMachineId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "ID of the route plan machine"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Route updated manually successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    },
+    "/daily/routes/{routePlanMachineId}/prekit-products": {
+      "get": {
+        "tags": ["Routes"],
+        "summary": "Get Prekit Products",
+        "description": "Retrieve prekitted products for a route plan machine.",
+        "operationId": "getDriverPrekittedProducts",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "routePlanMachineId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "ID of the route plan machine"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Prekit products retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/DailyPrekitProductDto"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    },
+    "/daily/routes/prekit-products": {
+      "post": {
+        "tags": ["Routes"],
+        "summary": "Update Prekit Products",
+        "description": "Update prekitted products for route planning.",
+        "operationId": "updateDriverPrekittedProducts",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/PrekitProductRequestDto"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Prekit products updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    },
+    "/daily/routes/{routePlanMachineId}/recalculate": {
+      "put": {
+        "tags": ["Routes"],
+        "summary": "Recalculate Routes",
+        "description": "Recalculate routes for a specific machine.",
+        "operationId": "reCalculateRoutes",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "routePlanMachineId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "ID of the route plan machine"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Routes recalculated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    },
+    "/daily/routes/{routePlanId}/machines/{machineId}/inventory": {
+      "get": {
+        "tags": ["Routes"],
+        "summary": "Get Machine Inventory",
+        "description": "Retrieve inventory for a specific machine in a route plan.",
+        "operationId": "getMachineInventory",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "routePlanId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "ID of the route plan"
+          },
+          {
+            "name": "machineId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "ID of the machine"
+          },
+          {
+            "name": "appType",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": ["VMS", "KIOSK", "MICRO_MARKET"]
+            },
+            "description": "Application type"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Machine inventory retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/DailyInventoryDto"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      },
+      "post": {
+        "tags": ["Routes"],
+        "summary": "Update Machine Inventory (Detailed)",
+        "description": "Update machine inventory with detailed information for a route plan.",
+        "operationId": "updateMachineInventoryDetailed",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "routePlanId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "ID of the route plan"
+          },
+          {
+            "name": "machineId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "ID of the machine"
+          },
+          {
+            "name": "appType",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": ["VMS", "KIOSK", "MICRO_MARKET"]
+            },
+            "description": "Application type"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DailyInventoryRequestDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Machine inventory updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    },
+    "/daily/routes/machines/{machineId}/inventory": {
+      "put": {
+        "tags": ["Routes"],
+        "summary": "Update Machine Inventory (Simple)",
+        "description": "Update machine inventory quantities.",
+        "operationId": "updateMachineInventorySimple",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "machineId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "ID of the machine"
+          },
+          {
+            "name": "appType",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": ["VMS", "KIOSK", "MICRO_MARKET"]
+            },
+            "description": "Application type"
+          },
+          {
+            "name": "truckId",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Truck ID"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/InventoryRequestDto"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Machine inventory updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    },
+    "/daily/routes/products/{productId}": {
+      "get": {
+        "tags": ["Routes"],
+        "summary": "Get Products by Organization",
+        "description": "Retrieve products for the organization excluding a specific product.",
+        "operationId": "getProductsByOrganization",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "productId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "ID of the product to exclude"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Products retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/DailyProductsDto"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    },
+    "/daily/routes/service-details": {
+      "post": {
+        "tags": ["Routes"],
+        "summary": "Upload Service Details",
+        "description": "Upload service details with optional file attachments.",
+        "operationId": "uploadServiceDetails",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "detailRequestDto": {
+                    "$ref": "#/components/schemas/ServiceDetailRequestDto"
+                  },
+                  "files": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "format": "binary"
+                    },
+                    "description": "Optional file attachments"
+                  }
+                },
+                "required": ["detailRequestDto"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Service details uploaded successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    },
+    "/daily/profile": {
+      "get": {
+        "tags": ["Profile Management"],
+        "summary": "Get Current User Profile",
+        "description": "Retrieve the current user's profile information.",
+        "operationId": "getCurrentUser",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User profile retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MyProfileDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    },
+    "/daily/profile/image": {
+      "get": {
+        "tags": ["Profile Management"],
+        "summary": "Get Profile Image Details",
+        "description": "Retrieve the current user's profile image details.",
+        "operationId": "getProfileImageDetails",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Profile image details retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProfileImageUpdateDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      },
+      "put": {
+        "tags": ["Profile Management"],
+        "summary": "Update Profile Image",
+        "description": "Update the current user's profile image.",
+        "operationId": "updateProfileImage",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProfileImageUpdateDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Profile image updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string",
+                  "example": "Profile image updated successfully"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    },
+    "/daily/profile/theme": {
+      "get": {
+        "tags": ["Profile Management"],
+        "summary": "Get Current Theme Mode",
+        "description": "Retrieve the current user's theme mode preference.",
+        "operationId": "getCurrentThemeMode",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Theme mode retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ThemeDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      },
+      "put": {
+        "tags": ["Profile Management"],
+        "summary": "Update Theme Mode",
+        "description": "Update the current user's theme mode preference.",
+        "operationId": "updateThemeMode",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "themeMode",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": ["light", "dark", "auto"],
+              "description": "Theme mode preference"
+            },
+            "description": "The theme mode to set (light, dark, or auto)"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Theme mode updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string",
+                  "example": "Theme updated successfully"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "JWT token for authentication"
+      }
+    },
+    "schemas": {
+      "LoginRequest": {
+        "type": "object",
+        "required": ["userName", "password"],
+        "properties": {
+          "userName": {
+            "type": "string",
+            "description": "Username for authentication",
+            "example": "john.doe"
+          },
+          "password": {
+            "type": "string",
+            "description": "Password for authentication",
+            "format": "password",
+            "example": "SecurePassword123!"
+          }
+        }
+      },
+      "OtpRequest": {
+        "type": "object",
+        "required": ["identifier", "otp"],
+        "properties": {
+          "identifier": {
+            "type": "string",
+            "description": "Email or username identifier",
+            "example": "john.doe@example.com"
+          },
+          "otp": {
+            "type": "string",
+            "description": "One-time password",
+            "example": "123456"
+          }
+        }
+      },
+      "ChangePasswordDto": {
+        "type": "object",
+        "required": ["password", "resetToken"],
+        "properties": {
+          "password": {
+            "type": "string",
+            "description": "New password",
+            "format": "password",
+            "example": "NewSecurePassword123!"
+          },
+          "resetToken": {
+            "type": "string",
+            "description": "JWT reset token received from OTP validation",
+            "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+          }
+        }
+      },
+      "DailyUserPermissions": {
+        "type": "object",
+        "properties": {
+          "moduelName": {
+            "type": "string",
+            "description": "Name of the module or field",
+            "example": "Sales Dashboard"
+          },
+          "edit": {
+            "type": "boolean",
+            "description": "Whether user can edit",
+            "example": true
+          },
+          "view": {
+            "type": "boolean",
+            "description": "Whether user can view",
+            "example": true
+          }
+        }
+      },
+      "ApiResponse": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "integer",
+            "description": "Response status code",
+            "example": 200
+          },
+          "status": {
+            "type": "string",
+            "description": "HTTP status",
+            "example": "OK"
+          },
+          "message": {
+            "type": "string",
+            "description": "Response message",
+            "example": "Operation completed successfully"
+          },
+          "data": {
+            "type": "object",
+            "description": "Response data",
+            "nullable": true
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Response timestamp"
+          }
+        }
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "string",
+            "description": "Error message",
+            "example": "Invalid request data"
+          },
+          "errorCode": {
+            "type": "string",
+            "description": "Error code",
+            "example": "BE101"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Error timestamp"
+          }
+        }
+      },
+      "MyProfileDto": {
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "integer",
+            "description": "User ID",
+            "example": 123
+          },
+          "userName": {
+            "type": "string",
+            "description": "Username",
+            "example": "john.doe"
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "description": "User email address",
+            "example": "john.doe@example.com"
+          },
+          "firstName": {
+            "type": "string",
+            "description": "User's first name",
+            "example": "John"
+          },
+          "lastName": {
+            "type": "string",
+            "description": "User's last name",
+            "example": "Doe"
+          },
+          "profileImageUrl": {
+            "type": "string",
+            "description": "URL to profile image",
+            "example": "https://example.com/images/profile.jpg",
+            "nullable": true
+          },
+          "themeMode": {
+            "type": "string",
+            "description": "User's preferred theme mode",
+            "enum": ["light", "dark", "auto"],
+            "example": "dark"
+          }
+        }
+      },
+      "ProfileImageUpdateDto": {
+        "type": "object",
+        "properties": {
+          "imageUrl": {
+            "type": "string",
+            "description": "URL to the profile image",
+            "example": "https://example.com/images/profile.jpg",
+            "nullable": true
+          },
+          "imageData": {
+            "type": "string",
+            "description": "Base64 encoded image data",
+            "example": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQ...",
+            "nullable": true
+          },
+          "fileName": {
+            "type": "string",
+            "description": "Original filename of the image",
+            "example": "profile.jpg",
+            "nullable": true
+          }
+        }
+      },
+      "ThemeDto": {
+        "type": "object",
+        "properties": {
+          "themeMode": {
+            "type": "string",
+            "description": "Current theme mode",
+            "enum": ["light", "dark", "auto"],
+            "example": "dark"
+          },
+          "userId": {
+            "type": "integer",
+            "description": "User ID",
+            "example": 123
+          }
+        }
+      },
+      "RoutesListDto": {
+        "type": "object",
+        "properties": {
+          "routePlanId": {
+            "type": "integer",
+            "description": "Route plan ID",
+            "example": 123
+          },
+          "routeName": {
+            "type": "string",
+            "description": "Route name",
+            "example": "Downtown Route A"
+          },
+          "status": {
+            "type": "string",
+            "description": "Route status",
+            "enum": ["PLANNED", "IN_PROGRESS", "COMPLETED", "CANCELLED"],
+            "example": "IN_PROGRESS"
+          },
+          "driverName": {
+            "type": "string",
+            "description": "Driver name",
+            "example": "John Smith"
+          },
+          "truckId": {
+            "type": "integer",
+            "description": "Truck ID",
+            "example": 456
+          },
+          "startDate": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Route start date"
+          },
+          "endDate": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Route end date"
+          }
+        }
+      },
+      "LocationListDto": {
+        "type": "object",
+        "properties": {
+          "locationId": {
+            "type": "integer",
+            "description": "Location ID",
+            "example": 789
+          },
+          "locationName": {
+            "type": "string",
+            "description": "Location name",
+            "example": "Office Building A"
+          },
+          "address": {
+            "type": "string",
+            "description": "Location address",
+            "example": "123 Main St, City, State"
+          },
+          "machineCount": {
+            "type": "integer",
+            "description": "Number of machines at location",
+            "example": 5
+          }
+        }
+      },
+      "MachinesListDto": {
+        "type": "object",
+        "properties": {
+          "machineId": {
+            "type": "integer",
+            "description": "Machine ID",
+            "example": 101
+          },
+          "machineName": {
+            "type": "string",
+            "description": "Machine name",
+            "example": "Vending Machine 1"
+          },
+          "machineType": {
+            "type": "string",
+            "description": "Machine type",
+            "example": "VENDING"
+          },
+          "status": {
+            "type": "string",
+            "description": "Machine status",
+            "example": "ACTIVE"
+          },
+          "lastServiceDate": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Last service date"
+          }
+        }
+      },
+      "MachineDetailsDto": {
+        "type": "object",
+        "properties": {
+            "moneyBag": {
+                "type": "string",
+                "description": "Money bag identifier",
+                "example": "MB12345"
+            },
+            "refundAmount": {
+                "type": "number",
+                "format": "double",
+                "description": "Refund amount",
+                "example": 10.50
+            },
+            "changeAdded": {
+                "type": "number",
+                "format": "double",
+                "description": "Change added to the machine",
+                "example": 5.00
+            },
+            "lastCalculatedOn": {
+                "type": "string",
+                "format": "date-time",
+                "description": "Last calculated date",
+                "example": "2024-06-01T12:00:00Z"
+            },
+            "lastUpdatedOn": {
+                "type": "string",
+                "format": "date-time",
+                "description": "Last updated date",
+                "example": "2024-06-01T15:00:00Z"
+            },
+            "driverNote": {
+                "$ref": "#/components/schemas/DailyMachineNotesDto"
+            },
+            "truckId": {
+                "type": "integer",
+                "description": "Truck ID",
+                "example": 555
+            },
+            "machineNotes": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/components/schemas/DailyMachineNotesDto"
+                },
+                "description": "List of machine notes"
+            },
+            "serviceImages": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/components/schemas/ServiceImagesDto"
+                },
+                "description": "List of service images"
+            },
+            "isTrio": {
+                "type": "boolean",
+                "description": "Is this a Trio machine",
+                "example": true
+            }
+        }
+    },
+      "DailyPrekitProductDto": {
+        "type": "object",
+        "properties": {
+          "productId": {
+            "type": "integer",
+            "description": "Product ID",
+            "example": 201
+          },
+          "productName": {
+            "type": "string",
+            "description": "Product name",
+            "example": "Coca Cola"
+          },
+          "prekitQuantity": {
+            "type": "integer",
+            "description": "Prekitted quantity",
+            "example": 24
+          },
+          "requiredQuantity": {
+            "type": "integer",
+            "description": "Required quantity",
+            "example": 30
+          },
+          "unitPrice": {
+            "type": "number",
+            "format": "double",
+            "description": "Unit price",
+            "example": 1.50
+          }
+        }
+      },
+      "PrekitProductRequestDto": {
+        "type": "object",
+        "required": ["productId", "quantity"],
+        "properties": {
+          "productId": {
+            "type": "integer",
+            "description": "Product ID",
+            "example": 201
+          },
+          "quantity": {
+            "type": "integer",
+            "description": "Quantity to prekit",
+            "example": 24
+          },
+          "routePlanMachineId": {
+            "type": "integer",
+            "description": "Route plan machine ID",
+            "example": 301
+          }
+        }
+      },
+      "DailyInventoryDto": {
+        "type": "object",
+        "properties": {
+          "productId": {
+            "type": "integer",
+            "description": "Product ID",
+            "example": 201
+          },
+          "productName": {
+            "type": "string",
+            "description": "Product name",
+            "example": "Coca Cola"
+          },
+          "currentQuantity": {
+            "type": "integer",
+            "description": "Current quantity in machine",
+            "example": 15
+          },
+          "capacity": {
+            "type": "integer",
+            "description": "Machine capacity for this product",
+            "example": 20
+          },
+          "parLevel": {
+            "type": "integer",
+            "description": "Par level",
+            "example": 18
+          },
+          "expiryDate": {
+            "type": "string",
+            "format": "date",
+            "description": "Product expiry date"
+          }
+        }
+      },
+      "InventoryRequestDto": {
+        "type": "object",
+        "required": ["productId", "quantity"],
+        "properties": {
+          "productId": {
+            "type": "integer",
+            "description": "Product ID",
+            "example": 201
+          },
+          "quantity": {
+            "type": "integer",
+            "description": "New quantity",
+            "example": 20
+          }
+        }
+      },
+      "DailyInventoryRequestDto": {
+        "type": "object",
+        "required": ["inventoryItems"],
+        "properties": {
+          "inventoryItems": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/InventoryRequestDto"
+            },
+            "description": "List of inventory items to update"
+          },
+          "notes": {
+            "type": "string",
+            "description": "Additional notes",
+            "example": "Restocked after maintenance"
+          },
+          "serviceDate": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Service date"
+          }
+        }
+      },
+      "DailyProductsDto": {
+        "type": "object",
+        "properties": {
+          "productId": {
+            "type": "integer",
+            "description": "Product ID",
+            "example": 201
+          },
+          "productName": {
+            "type": "string",
+            "description": "Product name",
+            "example": "Coca Cola"
+          },
+          "productCode": {
+            "type": "string",
+            "description": "Product code",
+            "example": "CC001"
+          },
+          "category": {
+            "type": "string",
+            "description": "Product category",
+            "example": "Beverages"
+          },
+          "unitPrice": {
+            "type": "number",
+            "format": "double",
+            "description": "Unit price",
+            "example": 1.50
+          },
+          "isActive": {
+            "type": "boolean",
+            "description": "Whether product is active",
+            "example": true
+          }
+        }
+      },
+      "ServiceDetailRequestDto": {
+        "type": "object",
+        "required": ["machineId", "serviceType"],
+        "properties": {
+          "machineId": {
+            "type": "integer",
+            "description": "Machine ID",
+            "example": 101
+          },
+          "serviceType": {
+            "type": "string",
+            "description": "Type of service",
+            "enum": ["MAINTENANCE", "CLEANING", "REPAIR", "RESTOCK"],
+            "example": "MAINTENANCE"
+          },
+          "serviceNotes": {
+            "type": "string",
+            "description": "Service notes",
+            "example": "Replaced coin mechanism"
+          },
+          "cashCollected": {
+            "type": "number",
+            "format": "double",
+            "description": "Cash collected",
+            "example": 125.50
+          },
+          "serviceDate": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Service date"
+          },
+          "duration": {
+            "type": "integer",
+            "description": "Service duration in minutes",
+            "example": 45
+          }
+        }
+      },
+      "DailyMachineNotesDto": {
+        "type": "object",
+        "properties": {
+            "description": {
+                "type": "string",
+                "description": "Description of the note"
+            },
+            "postedOn": {
+                "type": "string",
+                "format": "date-time",
+                "description": "Date and time when the note was posted"
+            },
+            "postedBy": {
+                "type": "string",
+                "description": "Name of the user who posted the note"
+            },
+            "notesType": {
+                "type": "string",
+                "description": "Type of the note",
+                "example": "GENERAL"
+            }
+        }
+    },
+    "ServiceImagesDto": {
+        "type": "object",
+        "properties": {
+            "machineImageId": {
+                "type": "integer",
+                "description": "Unique identifier for the machine image",
+                "example": 1001
+            },
+            "fileKey": {
+                "type": "string",
+                "description": "Storage key or filename for the image",
+                "example": "service_images/1001.jpg"
+            }
+        }
+    }
+    },
+    "responses": {
+      "BadRequest": {
+        "description": "Invalid request data",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            }
+          }
+        }
+      },
+      "Unauthorized": {
+        "description": "Unauthorized access - invalid or missing authentication",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            }
+          }
+        }
+      },
+      "Forbidden": {
+        "description": "Forbidden access - insufficient permissions",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            }
+          }
+        }
+      },
+      "NotFound": {
+        "description": "Resource not found",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            }
+          }
+        }
+      },
+      "TooManyRequests": {
+        "description": "Too many requests - rate limit exceeded",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            }
+          }
+        }
+      },
+      "InternalServerError": {
+        "description": "Internal server error",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            }
+          }
+        }
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "Authentication",
+      "description": "Authentication and authorization endpoints"
+    },
+    {
+      "name": "Account Management",
+      "description": "User account management operations"
+    },
+    {
+      "name": "Profile Management",
+      "description": "User profile management and customization"
+    },
+    {
+      "name": "Sales",
+      "description": "Sales data and analytics endpoints"
+    },
+    {
+      "name": "DEX",
+      "description": "DEX (Data Exchange) operations for machines"
+    },
+    {
+      "name": "Truck Management",
+      "description": "Truck inventory and management operations"
+    },
+    {
+      "name": "Notifications",
+      "description": "Notification management and settings"
+    },
+    {
+      "name": "Routes",
+      "description": "Route management and operations"
+    }
+  ]
+}
